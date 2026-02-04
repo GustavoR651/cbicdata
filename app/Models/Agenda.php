@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Agenda extends Model
 {
@@ -54,5 +55,11 @@ class Agenda extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'agenda_user');
+    }
+
+    // Relação: Votos vinculados através de projetos
+    public function votes(): HasManyThrough
+    {
+        return $this->hasManyThrough(Vote::class, Project::class);
     }
 }
