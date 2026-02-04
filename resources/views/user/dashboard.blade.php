@@ -88,9 +88,8 @@
                         @php
                             $isOpen = $agenda->deadline > now();
                             $isCompleted = $agenda->percentual == 100;
-                            // Se a relação votes existir no model User
-                            $userVotes = Auth::user()->votes ? Auth::user()->votes()->whereIn('project_id', $agenda->projects->pluck('id'))->count() : 0;
-                            $totalProjects = $agenda->projects->count();
+                            $userVotes = $agenda->user_votes_count ?? 0;
+                            $totalProjects = $agenda->projects_count ?? 0;
                         @endphp
 
                         <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-lg border border-slate-100 dark:border-slate-700 relative overflow-hidden group hover:border-red-100 dark:hover:border-slate-600 transition-all duration-300">
