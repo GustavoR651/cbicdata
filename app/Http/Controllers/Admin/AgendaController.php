@@ -114,11 +114,14 @@ class AgendaController extends Controller
         $agenda = Agenda::findOrFail($id);
         $agenda->load('projects', 'users'); 
         
+        $projectIds = $agenda->projects->pluck('id');
+        $agenda->users->loadCount(['votes' => function($query) use ($projectIds) {
+            $query->whereIn('project_id', $projectIds);
+        }]);
+
         $usersData = $agenda->users->map(function($user) use ($agenda) {
             $totalProjects = $agenda->projects->count();
-            $votesCount = Vote::where('user_id', $user->id)
-                              ->whereIn('project_id', $agenda->projects->pluck('id'))
-                              ->count();
+            $votesCount = $user->votes_count;
             $progress = $totalProjects > 0 ? round(($votesCount / $totalProjects) * 100) : 0;
             
             return (object) [
