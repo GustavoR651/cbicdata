@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Agenda;
 use App\Models\Project;
 use App\Models\Vote;
+use Illuminate\Support\Facades\DB;
 
 class VotingController extends Controller
 {
@@ -81,10 +82,32 @@ class VotingController extends Controller
         // ==================================================
         
         // Pega apenas valores únicos existentes nesta agenda para não mostrar filtros vazios
+        // OTIMIZAÇÃO: Combina 3 queries em 1 usando UNION ALL para evitar round trips desnecessários
+        $results = Project::select('tema as value', DB::raw("'temas' as type"))
+            ->where('agenda_id', $id)
+            ->whereNotNull('tema')
+            ->distinct()
+            ->toBase()
+            ->unionAll(
+                Project::select('subtema as value', DB::raw("'subtemas' as type"))
+                    ->where('agenda_id', $id)
+                    ->whereNotNull('subtema')
+                    ->distinct()
+                    ->toBase()
+            )
+            ->unionAll(
+                Project::select('interesse as value', DB::raw("'interesses' as type"))
+                    ->where('agenda_id', $id)
+                    ->whereNotNull('interesse')
+                    ->distinct()
+                    ->toBase()
+            )
+            ->get();
+
         $filters = [
-            'temas' => Project::where('agenda_id', $id)->whereNotNull('tema')->distinct()->pluck('tema')->sort(),
-            'subtemas' => Project::where('agenda_id', $id)->whereNotNull('subtema')->distinct()->pluck('subtema')->sort(),
-            'interesses' => Project::where('agenda_id', $id)->whereNotNull('interesse')->distinct()->pluck('interesse')->sort(),
+            'temas' => $results->where('type', 'temas')->pluck('value')->sort(),
+            'subtemas' => $results->where('type', 'subtemas')->pluck('value')->sort(),
+            'interesses' => $results->where('type', 'interesses')->pluck('value')->sort(),
         ];
 
         // Paginação (Mantém os filtros na URL ao mudar de página)
