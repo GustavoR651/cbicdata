@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\MassNotification;
 
 class SettingController extends Controller
 {
@@ -81,10 +82,7 @@ class SettingController extends Controller
 
         // Envia o e-mail para cada usuário
         foreach ($users as $user) {
-            Mail::html($request->message, function ($message) use ($user, $request) {
-                $message->to($user->email)
-                        ->subject($request->subject);
-            });
+            Mail::to($user)->queue(new MassNotification($request->subject, $request->message));
         }
 
         return redirect()->back()->with('success', 'Comunicado enviado com sucesso para ' . $users->count() . ' usuários!');
