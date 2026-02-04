@@ -36,23 +36,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/agenda/{id}/votar', [VotingController::class, 'show'])->name('agenda.vote');
     Route::post('/vote/store', [VotingController::class, 'store'])->name('vote.store');
     
-    // Rotas de Perfil
+    // Rota para exportar os votos do próprio usuário (Corrigido para UserDashboardController)
+    Route::get('/agenda/{id}/exportar-votos/{type}', [UserDashboardController::class, 'exportMyVotes'])
+        ->name('agenda.export_my_votes');
+
+    // Rotas de Perfil (Padrão Breeze)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // Rota para exportar os votos do próprio usuário
-    Route::get('/agenda/{id}/exportar-votos/{type}', [UserAgendaController::class, 'exportMyVotes'])
-        ->name('agenda.export_my_votes');
-        
-    });
+});
 
 // ==============================================================================
 // 2. ÁREA DO ADMINISTRADOR (GESTÃO TOTAL)
 // ==============================================================================
 Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')
-    ->name('admin.') // Todas as rotas aqui começam com admin.
+    ->name('admin.') // Prefixo para nomes: admin.dashboard, admin.agendas...
     ->group(function () {
 
     // --- DASHBOARD GERAL ---
@@ -61,60 +60,59 @@ Route::middleware(['auth', 'role:admin'])
     // --- MÓDULO: AGENDAS LEGISLATIVAS ---
     Route::prefix('agendas')->name('agendas.')->group(function() {
         
-        // Listagem
+        // Listagem e CRUD Básico
         Route::get('/', [AdminAgendaController::class, 'index'])->name('index');
-        
-        // Criar
         Route::get('/nova', [AdminAgendaController::class, 'create'])->name('create'); 
         Route::post('/nova', [AdminAgendaController::class, 'store'])->name('store');
         
-        // AJAX Check File
-        Route::post('/check-file', [AdminAgendaController::class, 'checkFile'])->name('check_file');
-        
-        // Download
-        Route::get('/{id}/download/{type}', [AdminAgendaController::class, 'download'])->name('download');
-
-        // Rota para o Relatório de Impressão/PDF
-        Route::get('agendas/{id}/relatorio', [AdminAgendaController::class, 'report'])->name('report');
-        
-        // Rota para Exportação Excel (Relatórios)
-        Route::get('/{id}/exportar/{type}', [AdminAgendaController::class, 'exportExcel'])->name('export');
-
-        // Visualizar
+        // Visualizar, Editar, Excluir
         Route::get('/{agenda}', [AdminAgendaController::class, 'show'])->name('show');
-        
-        // Editar
         Route::get('/{id}/editar', [AdminAgendaController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AdminAgendaController::class, 'update'])->name('update');
-        
-        // Excluir
         Route::delete('/{id}', [AdminAgendaController::class, 'destroy'])->name('destroy');
+
+        // Funcionalidades Específicas
+        Route::post('/check-file', [AdminAgendaController::class, 'checkFile'])->name('check_file');
+        Route::get('/{id}/download/{type}', [AdminAgendaController::class, 'download'])->name('download');
         
-        // Resetar Votos
+        // Relatórios
+        Route::get('agendas/{id}/relatorio', [AdminAgendaController::class, 'report'])->name('report');
+        Route::get('/{id}/exportar/{type}', [AdminAgendaController::class, 'exportExcel'])->name('export'); // Excel Admin
+
+        // Resetar Votos e Listar Projetos
         Route::delete('/{agenda}/user/{user}/reset', [AdminAgendaController::class, 'resetUserVotes'])->name('reset.user');
-        
-        // Projetos
-Route::get('/{id}/projetos', [AdminAgendaController::class, 'projects'])->name('projects');
+        Route::get('/{id}/projetos', [AdminAgendaController::class, 'projects'])->name('projects');
     });
 
     // --- MÓDULO: GESTÃO DE USUÁRIOS ---
     Route::prefix('usuarios')->name('users.')->group(function() {
-        Route::get('/', [AdminUserController::class, 'index'])->name('index');
         
+        // Rota de Relatório (Deve vir ANTES de /{user} para não dar conflito)
+        Route::get('/report', [AdminUserController::class, 'report'])->name('report');
+
+        // Listagem e CRUD
+        Route::get('/', [AdminUserController::class, 'index'])->name('index');
         Route::get('/novo', [AdminUserController::class, 'create'])->name('create');
         Route::post('/novo', [AdminUserController::class, 'store'])->name('store');
         
         Route::get('/{user}/editar', [AdminUserController::class, 'edit'])->name('edit');
         Route::put('/{user}', [AdminUserController::class, 'update'])->name('update');
-        
         Route::delete('/{user}', [AdminUserController::class, 'destroy'])->name('destroy');
+        
+        // Ações Específicas
         Route::post('/{user}/reset-senha', [AdminUserController::class, 'resetPassword'])->name('reset_password');
+
+        // NOVAS ROTAS DE IMPORTAÇÃO
+        Route::post('/import', [AdminUserController::class, 'import'])->name('import');
+        Route::get('/template', [AdminUserController::class, 'downloadTemplate'])->name('template');
     });
 
     // --- MÓDULO: CONFIGURAÇÕES ---
     Route::get('/configuracoes', [AdminSettingController::class, 'index'])->name('settings');
     Route::put('/configuracoes', [AdminSettingController::class, 'update'])->name('settings.update');
-
-});
+    Route::put('/configuracoes', [AdminSettingController::class, 'update'])->name('settings.update');
+    Route::post('/configuracoes/enviar-notificacao', [AdminSettingController::class, 'sendNotification'])->name('settings.send_notification');
+    
+    });
 
 require __DIR__.'/auth.php';
