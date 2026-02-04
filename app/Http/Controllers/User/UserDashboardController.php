@@ -8,8 +8,6 @@ use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\UserVotesExport; // Importe sua classe de exportação
 use App\Models\Agenda;
-use App\Models\Project;
-use App\Models\Vote;
 use App\Models\Setting;
 
 class UserDashboardController extends Controller
@@ -33,13 +31,17 @@ class UserDashboardController extends Controller
 
         // LISTA DE AGENDAS (Admin vê todas, User vê as vinculadas)
         // Adicionamos a lógica de carregar projetos para contar o progresso
+        $votesCountQuery = function ($query) use ($user) {
+            $query->where('user_id', $user->id);
+        };
+
         if ($user->role === 'admin') {
-            $agendas = Agenda::withCount('projects')
+            $agendas = Agenda::withCount(['projects', 'votes as user_votes_count' => $votesCountQuery])
                              ->orderBy('deadline', 'desc')
                              ->get();
         } else {
             $agendas = $user->agendas()
-                            ->withCount('projects')
+                            ->withCount(['projects', 'votes as user_votes_count' => $votesCountQuery])
                             ->orderBy('deadline', 'desc')
                             ->get();
         }
@@ -47,7 +49,12 @@ class UserDashboardController extends Controller
         // CALCULA O PROGRESSO PARA CADA AGENDA
         // Isso preenche o campo ->percentual usado na barra de progresso
         foreach ($agendas as $agenda) {
-            $this->calculateProgress($agenda, $user->id);
+            // Evita divisão por zero
+            $total = $agenda->projects_count;
+            $completed = $agenda->user_votes_count;
+
+            $percentual = $total > 0 ? round(($completed / $total) * 100) : 0;
+            $agenda->percentual = $percentual;
         }
 
         return view('user.dashboard', compact('agendas', 'mainAgenda', 'infoText'));
@@ -72,37 +79,5 @@ class UserDashboardController extends Controller
         $fileName = "Meus_Votos_Agenda{$agenda->year}_{$typeName}.xlsx";
 
         return Excel::download(new UserVotesExport($id, $user->id, $type), $fileName);
-    }
-
-    /**
-     * 3. MÉTODO AUXILIAR: CALCULAR PROGRESSO
-     * Conta quantos projetos o usuário já votou (Prioridade + Posição preenchidos)
-     */
-    private function calculateProgress($agenda, $userId) {
-        // Total de projetos na agenda
-        $total = Project::where('agenda_id', $agenda->id)->count();
-        
-        // Total votado pelo usuário (Voto completo)
-        // Considera voto válido se tiver Prioridade E Posição (ajuste conforme sua regra)
-        // Se basta votar em um campo, remova o whereNotNull extra.
-        $completed = Vote::where('user_id', $userId)
-            ->whereIn('project_id', function($q) use ($agenda) {
-                $q->select('id')->from('projects')->where('agenda_id', $agenda->id);
-            })
-            // ->whereNotNull('prioridade') // Descomente se prioridade for obrigatória
-            // ->whereNotNull('posicao')    // Descomente se posição for obrigatória
-            ->count();
-
-        // Evita divisão por zero
-        $percentual = $total > 0 ? round(($completed / $total) * 100) : 0;
-        
-        // Injeta o atributo no objeto agenda para a View usar
-        $agenda->percentual = $percentual;
-
-        return [
-            'percent' => $percentual, 
-            'total' => $total, 
-            'completed' => $completed
-        ];
     }
 }

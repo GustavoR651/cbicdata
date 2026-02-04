@@ -55,4 +55,9 @@ class Agenda extends Model
     {
         return $this->belongsToMany(User::class, 'agenda_user');
     }
+
+    public function votes(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(Vote::class, Project::class);
+    }
 }
