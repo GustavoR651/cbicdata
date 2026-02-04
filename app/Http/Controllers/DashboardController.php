@@ -15,7 +15,9 @@ class DashboardController extends Controller
                       ?? Agenda::latest()->first();
 
         // Pega todas as agendas para a lista lateral com a contagem de projetos
-        $agendas = Agenda::withCount('projects')
+        $agendas = Agenda::withCount(['projects', 'votes' => function ($query) {
+            $query->where('user_id', auth()->id());
+        }])
                          ->orderBy('year', 'desc')
                          ->get();
 
@@ -25,11 +27,7 @@ class DashboardController extends Controller
             
             // Correção lógica: Como a tabela 'votes' não tem 'agenda_id',
             // contamos quantos projetos desta agenda possuem votos deste usuário.
-            $userVotes = Vote::where('user_id', auth()->id())
-                            ->whereHas('project', function($q) use ($agenda) {
-                                $q->where('agenda_id', $agenda->id);
-                            })
-                            ->count();
+            $userVotes = $agenda->votes_count;
             
             $agenda->percentual = $totalProjects > 0 ? round(($userVotes / $totalProjects) * 100) : 0;
         }
