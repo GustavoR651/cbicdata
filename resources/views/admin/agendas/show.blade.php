@@ -1,285 +1,142 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <span class="flex items-center justify-center w-10 h-10 bg-blue-100 text-blue-600 rounded-xl shadow-sm">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                </span>
-                <div class="flex flex-col">
-                    <span class="text-xs text-slate-400 uppercase font-bold tracking-wider">Painel de Monitoramento</span>
-                    <h2 class="font-bold text-xl text-slate-800 dark:text-white leading-tight">
-                        {{ $agenda->title }}
-                    </h2>
-                </div>
+            <h2 class="font-bold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                {{ __('Projetos da Agenda') }}: {{ $agenda->title }}
+            </h2>
+            <div class="flex gap-2">
+                <a href="{{ route('admin.agendas.dashboard', $agenda->id) }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold shadow-sm transition-colors flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
+                    Painel (Estatísticas)
+                </a>
             </div>
-
-            <a href="{{ route('admin.agendas.index') }}" class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-800 hover:border-slate-400 flex items-center justify-center transition-all shadow-sm" title="Voltar para Lista">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            </a>
         </div>
     </x-slot>
 
-    <div class="min-h-screen bg-[#F3F4F6] dark:bg-[#0f172a] pb-20 transition-colors duration-500">
-        <div class="max-w-[1600px] mx-auto sm:px-6 lg:px-8 py-6 md:py-10">
-
-            @if(session('error'))
-                <div class="mb-6 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl border border-red-200 dark:border-red-800 font-bold text-sm">
-                    {{ session('error') }}
-                </div>
-            @endif
-
-            @php
-                $totalProjetos = $agenda->projects->count();
-                $qtdAgendados = $agenda->projects->where('type', 'agenda')->count();
-                $qtdRemanescentes = $agenda->projects->where('type', 'remanescente')->count();
-            @endphp
-
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
-                
-                <div class="bg-white dark:bg-slate-800 p-5 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-center gap-2 h-full">
-                    <div class="flex items-center gap-3 mb-1">
-                        <div class="p-2 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </div>
-                        <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase">Status</p>
-                    </div>
-                    <div>
-                        @if(now() <= $agenda->deadline)
-                            <p class="text-lg md:text-xl font-black text-emerald-500">Aberta</p>
-                            <p class="text-[10px] text-slate-400">Votação em andamento</p>
-                        @else
-                            <p class="text-lg md:text-xl font-black text-slate-500">Encerrada</p>
-                            <p class="text-[10px] text-slate-400">Prazo finalizado</p>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-slate-800 p-5 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full gap-3">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="p-2 rounded-lg bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                            </div>
-                            <div>
-                                <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase">Total</p>
-                                <p class="text-lg md:text-xl font-black text-slate-800 dark:text-white leading-none">{{ $totalProjetos }}</p>
-                            </div>
-                        </div>
-                    </div>
+    <div class="py-12 bg-[#F3F4F6] dark:bg-[#0f172a] min-h-screen">
+        <div class="max-w-[1600px] mx-auto sm:px-6 lg:px-8">
+            
+            <!-- Filters -->
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 mb-8">
+                <form method="GET" action="{{ route('admin.agendas.show', $agenda->id) }}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     
-                    <div class="grid grid-cols-2 gap-2 w-full">
-                        <div class="flex flex-col justify-center items-center p-1.5 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800">
-                            <span class="text-[8px] font-bold text-green-600 dark:text-green-400 uppercase">Agendados</span>
-                            <span class="text-xs font-black text-green-700 dark:text-green-300">{{ $qtdAgendados }}</span>
-                        </div>
-                        <div class="flex flex-col justify-center items-center p-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
-                            <span class="text-[8px] font-bold text-blue-600 dark:text-blue-400 uppercase">Remanesc.</span>
-                            <span class="text-xs font-black text-blue-700 dark:text-blue-300">{{ $qtdRemanescentes }}</span>
+                    <!-- Search -->
+                    <div class="lg:col-span-1">
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Buscar</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            </div>
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Código, Ementa..." class="w-full pl-10 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 dark:text-white">
                         </div>
                     </div>
-                </div>
 
-                <div class="bg-white dark:bg-slate-800 p-5 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-center gap-2 h-full">
-                    <div class="flex items-center gap-3 mb-1">
-                        <div class="p-2 rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                        </div>
-                        <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase">Participantes</p>
-                    </div>
+                    <!-- Type -->
                     <div>
-                        <p class="text-lg md:text-xl font-black text-slate-800 dark:text-white">{{ $usersData->count() }}</p>
-                        <p class="text-[10px] text-slate-400">Usuários habilitados</p>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Origem</label>
+                        <select name="type" class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 dark:text-white">
+                            <option value="all">Todas</option>
+                            <option value="agenda" {{ request('type') == 'agenda' ? 'selected' : '' }}>Apresentados</option>
+                            <option value="remanescente" {{ request('type') == 'remanescente' ? 'selected' : '' }}>Remanescentes</option>
+                        </select>
                     </div>
-                </div>
 
-                <div class="bg-white dark:bg-slate-800 p-5 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-center gap-2 h-full">
-                    <div class="flex items-center gap-3 mb-1">
-                        <div class="p-2 rounded-lg bg-red-50 text-[#FF3842] dark:bg-red-900/20">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                        </div>
-                        <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase">Encerramento</p>
-                    </div>
+                    <!-- Interest -->
                     <div>
-                        <p class="text-lg md:text-xl font-black text-[#FF3842]">{{ $agenda->deadline->format('d/m H:i') }}</p>
-                        <p class="text-[10px] text-slate-400">Data limite</p>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Interesse</label>
+                        <select name="interesse" class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 dark:text-white">
+                            <option value="all">Todos</option>
+                            @foreach($interesses as $interesse)
+                                <option value="{{ $interesse }}" {{ request('interesse') == $interesse ? 'selected' : '' }}>{{ $interesse }}</option>
+                            @endforeach
+                        </select>
                     </div>
-                </div>
+
+                    <!-- Actions -->
+                    <div class="flex items-end gap-2">
+                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg text-sm transition-colors">
+                            Filtrar
+                        </button>
+                        <a href="{{ route('admin.agendas.show', $agenda->id) }}" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-lg text-sm hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">
+                            Limpar
+                        </a>
+                    </div>
+                </form>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
-                <div class="space-y-6">
-                    
-                    <div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700">
-                        <h3 class="font-bold text-lg text-slate-800 dark:text-white mb-4">Detalhes da Agenda</h3>
-                        <div class="space-y-4">
-                            <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl">
-                                <p class="text-xs font-bold text-slate-400 uppercase">Descrição</p>
-                                <p class="text-sm text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">{{ $agenda->description ?? 'Sem descrição.' }}</p>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <p class="text-xs font-bold text-slate-400 uppercase">Início</p>
-                                    <p class="text-sm font-bold text-slate-700 dark:text-white">{{ $agenda->start_date ? $agenda->start_date->format('d/m/Y H:i') : '-' }}</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-xs font-bold text-slate-400 uppercase">Resultado</p>
-                                    <p class="text-sm font-bold text-slate-700 dark:text-white">{{ $agenda->results_date ? $agenda->results_date->format('d/m/Y') : '-' }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700">
-                        <h3 class="font-bold text-lg text-slate-800 dark:text-white mb-4">Arquivos da Base</h3>
-                        <div class="space-y-3">
-                            
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-green-50/50 dark:bg-slate-900 rounded-xl border border-green-100 dark:border-slate-700 gap-3 sm:gap-0">
-                                <div class="flex items-center gap-3">
-                                    <div class="bg-green-100 text-green-600 p-2.5 rounded-lg"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div>
-                                    <div>
-                                        <p class="text-[10px] text-slate-400 uppercase font-bold">Base 1</p>
-                                        <p class="text-sm font-bold text-slate-700 dark:text-white">Apresentados</p>
-                                    </div>
-                                </div>
-                                @if($agenda->file_path)
-                                    <a href="{{ route('admin.agendas.download', ['id' => $agenda->id, 'type' => 'agenda']) }}" class="text-xs font-bold text-white bg-green-500 hover:bg-green-600 px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1 w-full sm:w-auto">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Baixar
-                                    </a>
-                                @else
-                                    <span class="text-xs font-bold text-slate-400 bg-slate-200 px-3 py-1 rounded">Indisponível</span>
-                                @endif
-                            </div>
-
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-blue-50/50 dark:bg-slate-900 rounded-xl border border-blue-100 dark:border-slate-700 gap-3 sm:gap-0">
-                                <div class="flex items-center gap-3">
-                                    <div class="bg-blue-100 text-blue-600 p-2.5 rounded-lg"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div>
-                                    <div>
-                                        <p class="text-[10px] text-slate-400 uppercase font-bold">Base 2</p>
-                                        <p class="text-sm font-bold text-slate-700 dark:text-white">Remanescentes</p>
-                                    </div>
-                                </div>
-                                @if(!empty($agenda->file_path_remanescentes))
-                                    <a href="{{ route('admin.agendas.download', ['id' => $agenda->id, 'type' => 'remanescente']) }}" class="text-xs font-bold text-white bg-blue-500 hover:bg-blue-600 px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1 w-full sm:w-auto">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Baixar
-                                    </a>
-                                @else
-                                    <span class="text-[10px] font-bold text-slate-400 bg-slate-200 px-3 py-1 rounded w-full sm:w-auto text-center cursor-help" title="Edite a agenda e reenvie o arquivo para ativar o download.">Importado</span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700">
-                        <h3 class="font-bold text-lg text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            Relatórios Gerenciais
-                        </h3>
+            <!-- List -->
+            <div class="space-y-4">
+                @forelse($projects as $project)
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md transition-all">
+                    <div class="flex flex-col md:flex-row gap-6">
                         
-                        <div class="space-y-4">
-                            <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-red-200 hover:bg-red-50/30 transition-all group">
-                                <div class="flex items-start justify-between mb-3">
-                                    <div class="flex items-center gap-3">
-                                        <div class="p-2 bg-red-100 text-red-600 rounded-lg">
-                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                                        </div>
-                                        <div>
-                                            <h4 class="font-bold text-slate-800 dark:text-white text-sm">Relatório Executivo (PDF)</h4>
-                                            <p class="text-[10px] text-slate-500 mt-0.5">Consolidado visual para impressão com ressalvas.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <a href="{{ route('admin.agendas.report', $agenda->id) }}" target="_blank" class="flex items-center justify-center w-full py-2.5 bg-slate-800 text-white text-xs font-bold rounded-lg hover:bg-slate-700 transition-colors">
-                                    Visualizar PDF
-                                </a>
+                        <!-- Header / Info -->
+                        <div class="md:w-1/4 flex flex-col gap-2">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-1 rounded-md text-xs font-bold uppercase {{ $project->type == 'agenda' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700' }}">
+                                    {{ $project->type == 'agenda' ? 'Apresentado' : 'Remanescente' }}
+                                </span>
+                                <span class="text-xs font-mono text-slate-400">#{{ $project->id }}</span>
                             </div>
-
-                            <hr class="border-slate-100 dark:border-slate-700">
-                            
-                            <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Exportar Dados Respondidos (Excel)</h4>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <a href="{{ route('admin.agendas.export', ['id' => $agenda->id, 'type' => 'apresentados']) }}" class="flex flex-col items-center justify-center p-3 rounded-xl bg-green-50 border border-green-100 hover:bg-green-100 transition-all text-center group">
-                                    <div class="text-green-600 mb-1"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div>
-                                    <span class="text-xs font-bold text-green-700">Apresentados</span>
-                                    <span class="text-[9px] text-green-600">Somente votados</span>
-                                </a>
-
-                                <a href="{{ route('admin.agendas.export', ['id' => $agenda->id, 'type' => 'remanescentes']) }}" class="flex flex-col items-center justify-center p-3 rounded-xl bg-blue-50 border border-blue-100 hover:bg-blue-100 transition-all text-center group">
-                                    <div class="text-blue-600 mb-1"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div>
-                                    <span class="text-xs font-bold text-blue-700">Remanescentes</span>
-                                    <span class="text-[9px] text-blue-600">Somente votados</span>
-                                </a>
-
-                                <a href="{{ route('admin.agendas.export', ['id' => $agenda->id, 'type' => 'geral']) }}" class="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-100 border border-slate-200 hover:bg-slate-200 transition-all text-center group">
-                                    <div class="text-slate-600 mb-1"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg></div>
-                                    <span class="text-xs font-bold text-slate-700">Geral Unificado</span>
-                                    <span class="text-[9px] text-slate-500">Todos os projetos</span>
-                                </a>
+                            <h3 class="font-bold text-lg text-slate-800 dark:text-white">
+                                {{ $project->codigo }}
+                            </h3>
+                            <div class="text-xs text-slate-500 space-y-1">
+                                <p><span class="font-bold">Autor:</span> {{ $project->autor }}</p>
+                                <p><span class="font-bold">Partido:</span> {{ $project->partido }}</p>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <div class="lg:col-span-2 space-y-6">
-                    
-                    <div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700">
-                        <div class="flex items-center justify-between mb-6">
-                            <h3 class="font-bold text-lg text-slate-800 dark:text-white">Progresso de Votação</h3>
-                            <span class="text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-full">{{ $usersData->count() }} Participantes</span>
-                        </div>
-
-                        <div class="space-y-6 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
-                            @forelse($usersData as $userData)
-                            <div class="group">
-                                <div class="flex justify-between items-end mb-2">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-500">
-                                            {{ substr($userData->name, 0, 1) }}
-                                        </div>
-                                        <div>
-                                            <p class="font-bold text-sm text-slate-700 dark:text-white leading-none">{{ $userData->name }}</p>
-                                            <p class="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wide">{{ $userData->associacao ?? 'Empresa não informada' }}</p>
-                                        </div>
-                                    </div>
-                                    <span class="font-bold text-sm {{ $userData->progress == 100 ? 'text-emerald-500' : 'text-slate-600 dark:text-slate-400' }}">{{ $userData->progress }}%</span>
-                                </div>
-                                <div class="w-full bg-slate-100 dark:bg-slate-900 rounded-full h-2.5 overflow-hidden">
-                                    <div class="bg-gradient-to-r {{ $userData->progress == 100 ? 'from-emerald-400 to-emerald-600' : 'from-blue-400 to-indigo-600' }} h-2.5 rounded-full transition-all duration-1000 group-hover:shadow-[0_0_10px_rgba(59,130,246,0.5)]" style="width: {{ $userData->progress }}%"></div>
-                                </div>
-                            </div>
-                            @empty
-                            <div class="text-center py-10"><p class="text-slate-400 text-sm">Nenhum participante vinculado.</p></div>
-                            @endforelse
-                        </div>
-                    </div>
-
-                    <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-[2rem] p-8 shadow-xl relative overflow-hidden group">
-                        <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:bg-white/10 transition-all duration-500"></div>
-                        
-                        <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                        <!-- Content -->
+                        <div class="md:w-2/4 flex flex-col gap-2">
                             <div>
-                                <h3 class="text-2xl font-bold text-white mb-2">Base de Projetos</h3>
-                                <p class="text-slate-400 text-sm max-w-md">
-                                    Acesse a listagem completa, utilize filtros avançados, visualize detalhes e gere PDFs individuais de cada proposição.
+                                <h4 class="text-xs font-bold text-slate-400 uppercase mb-1">Ementa</h4>
+                                <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3">
+                                    {{ $project->ementa }}
                                 </p>
                             </div>
-                            
-                            <a href="{{ route('admin.agendas.projects', $agenda->id) }}" class="whitespace-nowrap px-8 py-4 bg-[#FF3842] hover:bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 transition-all transform group-hover:scale-105 flex items-center">
-                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
-                                Visualizar Projetos
-                            </a>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                @if($project->tema)
+                                    <span class="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-[10px] font-bold text-slate-500 uppercase">{{ $project->tema }}</span>
+                                @endif
+                                @if($project->interesse)
+                                    <span class="px-2 py-1 bg-purple-50 dark:bg-purple-900/20 rounded text-[10px] font-bold text-purple-600 uppercase">{{ $project->interesse }}</span>
+                                @endif
+                            </div>
                         </div>
-                    </div>
 
+                        <!-- Stats / Actions -->
+                        <div class="md:w-1/4 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-700 pt-4 md:pt-0 md:pl-6 flex flex-col justify-between">
+                             <div class="mb-4">
+                                <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Votação</h4>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex-1 bg-slate-100 dark:bg-slate-700 rounded-full h-2">
+                                        <div class="bg-blue-500 h-2 rounded-full" style="width: {{ $agenda->users->count() > 0 ? ($project->votes->count() / $agenda->users->count()) * 100 : 0 }}%"></div>
+                                    </div>
+                                    <span class="text-xs font-bold text-slate-600 dark:text-slate-300">{{ $project->votes->count() }} / {{ $agenda->users->count() }}</span>
+                                </div>
+                             </div>
+                             
+                             <!-- Expandable Details (Placeholder for future) -->
+                             <button type="button" class="w-full py-2 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-lg transition-colors">
+                                 Ver Detalhes
+                             </button>
+                        </div>
+
+                    </div>
                 </div>
+                @empty
+                <div class="p-12 text-center text-slate-400">
+                    <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <p>Nenhum projeto encontrado para os filtros selecionados.</p>
+                </div>
+                @endforelse
             </div>
+
+            <div class="mt-8">
+                {{ $projects->links() }}
+            </div>
+
         </div>
     </div>
-
-    <style>
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
-    </style>
 </x-app-layout>

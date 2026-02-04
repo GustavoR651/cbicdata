@@ -145,6 +145,33 @@ class VotingController extends Controller
     }
 
     /**
+     * Remove o voto do banco de dados (Limpar Voto)
+     */
+    public function destroy(Request $request)
+    {
+        $request->validate([
+            'project_id' => 'required|exists:projects,id',
+        ]);
+
+        $user = Auth::user();
+
+        // Deleta o voto se existir
+        Vote::where('user_id', $user->id)
+            ->where('project_id', $request->project_id)
+            ->delete();
+
+        // Recalcula progresso
+        $project = Project::find($request->project_id);
+        $agenda = Agenda::find($project->agenda_id);
+        $newProgress = $this->calculateProgress($agenda, $user->id);
+
+        return response()->json([
+            'success' => true,
+            'newPercent' => $newProgress['percent']
+        ]);
+    }
+
+    /**
      * Auxiliar: Calcula progresso
      */
     private function calculateProgress($agenda, $userId) {

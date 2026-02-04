@@ -59,6 +59,7 @@ return new class extends Migration
             $table->text('ementa')->nullable();
             $table->string('tema')->nullable()->index();
             $table->string('subtema')->nullable();
+            $table->string('interesse')->nullable()->index(); // Adicionado
             $table->string('foco')->nullable();
             $table->string('celula_tematica')->nullable();
             $table->string('orgao_origem')->nullable();
@@ -83,9 +84,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('project_id')->constrained()->onDelete('cascade');
-            $table->string('prioridade'); 
-            $table->string('posicao');    
-            $table->text('ressalva')->nullable();
+            $table->string('prioridade')->nullable(); 
+            $table->string('vote_value');    
+            $table->text('comment')->nullable();
             $table->unique(['user_id', 'project_id']);
             $table->timestamps();
         });

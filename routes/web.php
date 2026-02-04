@@ -35,6 +35,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // --- Fluxo de Votação ---
     Route::get('/agenda/{id}/votar', [VotingController::class, 'show'])->name('agenda.vote');
     Route::post('/vote/store', [VotingController::class, 'store'])->name('vote.store');
+    Route::delete('/vote/destroy', [VotingController::class, 'destroy'])->name('vote.destroy');
     
     // Rota para exportar os votos do próprio usuário (Corrigido para UserDashboardController)
     Route::get('/agenda/{id}/exportar-votos/{type}', [UserDashboardController::class, 'exportMyVotes'])
@@ -65,8 +66,10 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/nova', [AdminAgendaController::class, 'create'])->name('create'); 
         Route::post('/nova', [AdminAgendaController::class, 'store'])->name('store');
         
-        // Visualizar, Editar, Excluir
-        Route::get('/{agenda}', [AdminAgendaController::class, 'show'])->name('show');
+        // Visualizar e Dashboard
+        Route::get('/{id}/painel', [AdminAgendaController::class, 'dashboard'])->name('dashboard'); // Painel Estatístico
+        Route::get('/{id}', [AdminAgendaController::class, 'show'])->name('show'); // Lista de Projetos (Principal)
+        
         Route::get('/{id}/editar', [AdminAgendaController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AdminAgendaController::class, 'update'])->name('update');
         Route::delete('/{id}', [AdminAgendaController::class, 'destroy'])->name('destroy');
@@ -76,12 +79,11 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/{id}/download/{type}', [AdminAgendaController::class, 'download'])->name('download');
         
         // Relatórios
-        Route::get('agendas/{id}/relatorio', [AdminAgendaController::class, 'report'])->name('report');
+        Route::get('/{id}/relatorio', [AdminAgendaController::class, 'report'])->name('report');
         Route::get('/{id}/exportar/{type}', [AdminAgendaController::class, 'exportExcel'])->name('export'); // Excel Admin
 
-        // Resetar Votos e Listar Projetos
+        // Resetar Votos
         Route::delete('/{agenda}/user/{user}/reset', [AdminAgendaController::class, 'resetUserVotes'])->name('reset.user');
-        Route::get('/{id}/projetos', [AdminAgendaController::class, 'projects'])->name('projects');
     });
 
     // --- MÓDULO: GESTÃO DE USUÁRIOS ---

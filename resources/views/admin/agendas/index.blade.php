@@ -8,10 +8,7 @@
                 Gerenciar Agendas
             </h2>
             
-            <a href="{{ route('admin.agendas.create') }}" class="hidden md:inline-flex group relative items-center justify-center px-6 py-3 text-sm font-bold text-white transition-all duration-200 bg-[#FF3842] font-pj rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF3842] hover:bg-red-700 shadow-lg hover:shadow-red-500/40 hover:-translate-y-1">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                Nova Agenda
-            </a>
+
         </div>
     </x-slot>
 
@@ -30,6 +27,110 @@
                     <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                     Criar Nova Agenda
                 </a>
+            </div>
+
+            <!-- Dashboard Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Card 1: Agendas -->
+                <div class="bg-white dark:bg-slate-800 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden group">
+                    <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 dark:bg-blue-900/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            </div>
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Agendas Ativas</span>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-3xl font-black text-slate-800 dark:text-white">{{ $stats['active_agendas'] }}</span>
+                            <span class="text-sm font-bold text-slate-400">/ {{ $stats['agendas'] }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Projetos -->
+                <div class="bg-white dark:bg-slate-800 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden group">
+                    <div class="absolute -right-6 -top-6 w-24 h-24 bg-purple-50 dark:bg-purple-900/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2.5 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                            </div>
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Base de Projetos</span>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-3xl font-black text-slate-800 dark:text-white">{{ $stats['projetos'] }}</span>
+                        </div>
+                        <div class="flex gap-3 mt-2 text-xs font-bold">
+                            <span class="text-green-600">{{ $stats['projetos_agendados'] }} Agend.</span>
+                            <span class="text-blue-600">{{ $stats['projetos_remanescentes'] }} Reman.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Votos -->
+                <div class="bg-white dark:bg-slate-800 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden group">
+                    <div class="absolute -right-6 -top-6 w-24 h-24 bg-emerald-50 dark:bg-emerald-900/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                                <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Votos Computados</span>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-3xl font-black text-slate-800 dark:text-white">{{ $stats['votos'] }}</span>
+                                <span class="text-sm font-bold text-slate-400">Votos Totais</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded w-fit">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                <span>{{ $stats['voters'] }} Usuários</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters & Search -->
+            <!-- Filters & Search (Floating Style) -->
+            <div class="flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
+                
+                <!-- Left: Search & Filter -->
+                <form action="{{ route('admin.agendas.index') }}" method="GET" class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+                    
+                    <div class="relative w-full md:w-96">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Buscar por título ou ano..." class="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 border-transparent focus:border-blue-500 rounded-xl text-sm shadow-sm focus:ring-2 focus:ring-blue-500 dark:text-white transition-all placeholder:text-slate-400">
+                    </div>
+
+                    <select name="status" onchange="this.form.submit()" class="w-full md:w-48 bg-white dark:bg-slate-800 border-transparent focus:border-blue-500 rounded-xl text-sm shadow-sm focus:ring-2 focus:ring-blue-500 dark:text-white py-3 px-4 text-slate-600 font-medium">
+                        <option value="">Todos os Status</option>
+                        <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Abertas</option>
+                        <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>Encerradas</option>
+                    </select>
+
+                    <button type="submit" class="hidden md:inline-flex px-6 py-3 bg-slate-800 dark:bg-slate-700 text-white font-bold rounded-xl text-sm hover:bg-slate-700 shadow-sm transition-colors">
+                        Filtrar
+                    </button>
+                    
+                    @if(request()->anyFilled(['search', 'status']))
+                        <a href="{{ route('admin.agendas.index') }}" class="flex items-center justify-center px-4 py-3 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold rounded-xl text-sm hover:bg-slate-50 shadow-sm transition-colors" title="Limpar Filtros">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </a>
+                    @endif
+                </form>
+
+                <!-- Right: Actions -->
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <a href="{{ route('admin.agendas.create') }}" class="w-full md:w-auto inline-flex items-center justify-center px-6 py-3 bg-[#FF3842] text-white font-bold rounded-xl text-sm hover:bg-red-700 shadow-lg shadow-red-500/30 transition-all hover:-translate-y-0.5 whitespace-nowrap">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        NOVA AGENDA
+                    </a>
+                </div>
+
             </div>
 
             <div class="hidden lg:block bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
@@ -121,11 +222,11 @@
                             </td>
 
                             <td class="px-8 py-6 text-right pr-10">
-                                <div class="flex items-center justify-end gap-2">
-                                    <a href="{{ route('admin.agendas.show', $agenda->id) }}" class="flex items-center justify-center w-9 h-9 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white hover:shadow-lg transition-all" title="Painel de Monitoramento">
+                                    <div class="flex items-center justify-end gap-2">
+                                    <a href="{{ route('admin.agendas.dashboard', $agenda->id) }}" class="flex items-center justify-center w-9 h-9 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white hover:shadow-lg transition-all" title="Painel de Monitoramento">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
                                     </a>
-                                    <a href="{{ route('admin.agendas.projects', $agenda->id) }}" class="flex items-center justify-center w-9 h-9 rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white hover:shadow-lg transition-all" title="Ver Lista de Projetos">
+                                    <a href="{{ route('admin.agendas.show', $agenda->id) }}" class="flex items-center justify-center w-9 h-9 rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white hover:shadow-lg transition-all" title="Ver Lista de Projetos">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
                                     </a>
                                     <a href="{{ route('admin.agendas.edit', $agenda->id) }}" class="flex items-center justify-center w-9 h-9 rounded-xl bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white hover:shadow-lg transition-all" title="Editar">
@@ -203,10 +304,10 @@
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
-                        <a href="{{ route('admin.agendas.show', $agenda->id) }}" class="flex items-center justify-center py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold border border-blue-100 dark:border-blue-900/30">
+                        <a href="{{ route('admin.agendas.dashboard', $agenda->id) }}" class="flex items-center justify-center py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold border border-blue-100 dark:border-blue-900/30">
                             Painel
                         </a>
-                        <a href="{{ route('admin.agendas.projects', $agenda->id) }}" class="flex items-center justify-center py-2.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-xl text-xs font-bold border border-purple-100 dark:border-purple-900/30">
+                        <a href="{{ route('admin.agendas.show', $agenda->id) }}" class="flex items-center justify-center py-2.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-xl text-xs font-bold border border-purple-100 dark:border-purple-900/30">
                             Projetos
                         </a>
                         <a href="{{ route('admin.agendas.edit', $agenda->id) }}" class="flex items-center justify-center py-2.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-xl text-xs font-bold border border-orange-100 dark:border-orange-900/30">
@@ -223,6 +324,10 @@
                 @empty
                 <div class="text-center py-10 text-slate-500">Nenhuma agenda.</div>
                 @endforelse
+            </div>
+
+            <div class="mt-8">
+                {{ $agendas->links() }}
             </div>
 
         </div>

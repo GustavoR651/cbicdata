@@ -16,23 +16,54 @@ use App\Exports\VotedProjectsExport;
 class AgendaController extends Controller
 {
     // =========================================================================
-    // 1. LISTAGEM
+    // 1. LISTAGEM (DASHBOARD GERAL DE AGENDAS)
     // =========================================================================
-    public function index() {
-        $agendas = Agenda::withCount([
+    public function index(Request $request)
+    {
+        $query = Agenda::withCount([
             'projects', // Conta o total geral
             'projects as apresentados_count' => function ($query) {
                 $query->where('type', 'agenda'); // Conta apenas Apresentados
             },
             'projects as remanescentes_count' => function ($query) {
                 $query->where('type', 'remanescente'); // Conta apenas Remanescentes
-            }
-        ])
-        ->orderByRaw("deadline >= NOW() DESC")
-        ->orderBy('deadline', 'desc')
-        ->get();
+            },
+        ]);
 
-        return view('admin.agendas.index', compact('agendas'));
+        // Filtro de Busca
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', "%{$request->search}%")
+                    ->orWhere('year', 'like', "%{$request->search}%");
+            });
+        }
+
+        // Filtro de Status
+        if ($request->filled('status')) {
+            if ($request->status === 'active') {
+                $query->where('deadline', '>=', now());
+            } elseif ($request->status === 'closed') {
+                $query->where('deadline', '<', now());
+            }
+        }
+
+        $agendas = $query->orderByRaw('deadline >= NOW() DESC')
+            ->orderBy('deadline', 'desc')
+            ->paginate(5)
+            ->withQueryString();
+
+        // Estatísticas Globais para o Painel
+        $stats = [
+            'agendas' => Agenda::count(),
+            'active_agendas' => Agenda::where('deadline', '>=', now())->count(),
+            'projetos' => Project::count(),
+            'projetos_agendados' => Project::where('type', 'agenda')->count(),
+            'projetos_remanescentes' => Project::where('type', 'remanescente')->count(),
+            'votos' => Vote::count(),
+            'voters' => Vote::distinct('user_id')->count('user_id'),
+        ];
+
+        return view('admin.agendas.index', compact('agendas', 'stats'));
     }
 
     // =========================================================================
@@ -108,28 +139,83 @@ class AgendaController extends Controller
     }
 
     // =========================================================================
-    // 4. SHOW
+    // 4. SHOW (LISTA DE PROJETOS E GESTÃO)
     // =========================================================================
-    public function show($id) {
+    public function show(Request $request, $id)
+    {
         $agenda = Agenda::findOrFail($id);
-        $agenda->load('projects', 'users'); 
-        
-        $usersData = $agenda->users->map(function($user) use ($agenda) {
+
+        // 1. Carregar listas para os filtros (Select Distinct)
+        $temas = $agenda->projects()->select('tema')->distinct()->orderBy('tema')->pluck('tema');
+        $subtemas = $agenda->projects()->select('subtema')->distinct()->orderBy('subtema')->pluck('subtema');
+        $focos = $agenda->projects()->select('foco')->distinct()->orderBy('foco')->pluck('foco');
+        $celulas = $agenda->projects()->select('celula_tematica')->distinct()->orderBy('celula_tematica')->pluck('celula_tematica');
+        $autores = $agenda->projects()->select('autor')->distinct()->orderBy('autor')->pluck('autor');
+        $partidos = $agenda->projects()->select('partido')->distinct()->orderBy('partido')->pluck('partido');
+        $ufs = $agenda->projects()->select('uf')->distinct()->orderBy('uf')->pluck('uf');
+        $tipos = $agenda->projects()->select('type')->distinct()->orderBy('type')->pluck('type');
+        $interesses = $agenda->projects()->select('interesse')->distinct()->orderBy('interesse')->pluck('interesse');
+
+        // 2. Iniciar Query
+        $query = $agenda->projects()->with(['votes.user']);
+
+        // 3. Aplicar Filtros
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('codigo', 'like', "%{$search}%")
+                    ->orWhere('ementa', 'like', "%{$search}%")
+                    ->orWhere('autor', 'like', "%{$search}%")
+                    ->orWhere('partido', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('type') && $request->type !== 'all') {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('interesse') && $request->interesse !== 'all') {
+            $query->where('interesse', $request->interesse);
+        }
+
+        if ($request->filled('tema') && $request->tema !== 'all') {
+            $query->where('tema', $request->tema);
+        }
+
+        if ($request->filled('subtema') && $request->subtema !== 'all') {
+            $query->where('subtema', $request->subtema);
+        }
+
+        // Paginação
+        $projects = $query->paginate(20)->withQueryString();
+
+        return view('admin.agendas.projects', compact('agenda', 'projects', 'temas', 'subtemas', 'focos', 'celulas', 'autores', 'partidos', 'ufs', 'tipos', 'interesses'));
+    }
+
+    // =========================================================================
+    // 5. DASHBOARD (ESTATÍSTICAS)
+    // =========================================================================
+    public function dashboard($id)
+    {
+        $agenda = Agenda::findOrFail($id);
+        $agenda->load('projects', 'users');
+
+        $usersData = $agenda->users->map(function ($user) use ($agenda) {
             $totalProjects = $agenda->projects->count();
             $votesCount = Vote::where('user_id', $user->id)
-                              ->whereIn('project_id', $agenda->projects->pluck('id'))
-                              ->count();
+                ->whereIn('project_id', $agenda->projects->pluck('id'))
+                ->count();
             $progress = $totalProjects > 0 ? round(($votesCount / $totalProjects) * 100) : 0;
-            
+
             return (object) [
-                'id' => $user->id, 
-                'name' => $user->name, 
+                'id' => $user->id,
+                'name' => $user->name,
                 'associacao' => $user->associacao,
-                'progress' => $progress
+                'progress' => $progress,
             ];
         });
 
-        return view('admin.agendas.show', compact('agenda', 'usersData'));
+        return view('admin.agendas.dashboard', compact('agenda', 'usersData'));
     }
 
     // =========================================================================
@@ -266,19 +352,25 @@ class AgendaController extends Controller
             ->with(['votes.user'])
             ->get()
             ->map(function($project) {
+                // Estatísticas Baseadas em 'posicao' e 'ressalva'
+                $convergentes = $project->votes->where('posicao', 'Convergente');
+                $divergentes  = $project->votes->where('posicao', 'Divergente');
+                
                 $stats = [
-                    'convergente' => $project->votes->where('vote_value', 'Convergente')->count(),
-                    'convergente_ressalva' => $project->votes->where('vote_value', 'Convergente com Ressalva')->count(),
-                    'divergente' => $project->votes->where('vote_value', 'Divergente')->count(),
-                    'abstencao' => $project->votes->where('vote_value', 'Abstenção')->count(),
+                    'convergente' => $convergentes->count(),
+                    'divergente' => $divergentes->count(),
+                    // Prioridades
+                    'agenda' => $project->votes->where('prioridade', 'Agenda')->count(),
+                    'alta' => $project->votes->where('prioridade', 'Alta')->count(),
+                    'media' => $project->votes->where('prioridade', 'Média')->count(),
+                    'baixa' => $project->votes->where('prioridade', 'Baixa')->count(),
                 ];
 
                 $ressalvas = $project->votes
-                    ->whereNotNull('comment')
-                    ->where('comment', '!=', '')
+                    ->filter(fn($v) => !empty($v->ressalva))
                     ->map(function($vote) {
                         $empresa = $vote->user->associacao ?? 'Empresa não informada';
-                        return "<strong>{$empresa}</strong> - {$vote->comment}";
+                        return "<strong>({$empresa})</strong> - {$vote->ressalva}";
                     });
 
                 $project->stats = $stats;
@@ -302,58 +394,5 @@ class AgendaController extends Controller
 
         return Excel::download(new VotedProjectsExport($id, $type), $fileName);
     }
-   // =========================================================================
-    // 11. LISTAGEM DE PROJETOS (COM FILTRO DE INTERESSE)
-    // =========================================================================
-    public function projects(Request $request, $id) {
-        $agenda = Agenda::findOrFail($id);
-        
-        // 1. Carregar listas para os filtros (Select Distinct)
-        $temas = $agenda->projects()->select('tema')->distinct()->orderBy('tema')->pluck('tema');
-        $subtemas = $agenda->projects()->select('subtema')->distinct()->orderBy('subtema')->pluck('subtema');
-        
-        // NOVO: Lista de Interesses
-        $interesses = $agenda->projects()->select('interesse')->distinct()->orderBy('interesse')->pluck('interesse');
 
-        // 2. Iniciar Query
-        $query = $agenda->projects()->with('votes');
-
-        // 3. Aplicar Filtros
-        
-        // Busca textual
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('codigo', 'like', "%{$search}%")
-                  ->orWhere('ementa', 'like', "%{$search}%")
-                  ->orWhere('autor', 'like', "%{$search}%")
-                  ->orWhere('partido', 'like', "%{$search}%");
-            });
-        }
-
-        // Filtro: Origem (Tipo)
-        if ($request->filled('type') && $request->type !== 'all') {
-            $query->where('type', $request->type);
-        }
-
-        // NOVO: Filtro Interesse
-        if ($request->filled('interesse') && $request->interesse !== 'all') {
-            $query->where('interesse', $request->interesse);
-        }
-
-        // Filtro: Tema
-        if ($request->filled('tema') && $request->tema !== 'all') {
-            $query->where('tema', $request->tema);
-        }
-
-        // Filtro: Subtema
-        if ($request->filled('subtema') && $request->subtema !== 'all') {
-            $query->where('subtema', $request->subtema);
-        }
-
-        // Paginação
-        $projects = $query->paginate(20)->withQueryString();
-
-        return view('admin.agendas.projects', compact('agenda', 'projects', 'temas', 'subtemas', 'interesses'));
-    }
 }
